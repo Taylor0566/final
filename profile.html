@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusHub - 个人中心</title>
+<link href="assets/vendor/bootstrap-5.3.2.min.css" rel="stylesheet">
+<link href="assets/styles.css" rel="stylesheet">
+</head>
+<body class="bg-apple-gray" data-page="PROFILE">
+<nav class="nav-dark sticky-top">
+  <div class="container d-flex align-items-center justify-content-between py-2">
+    <div class="d-flex align-items-center">
+      <span class="brand">CampusHub</span>
+    </div>
+    <div class="d-none d-md-flex align-items-center gap-3">
+      <span class="nav-item" data-view="HOME">首页</span>
+      <span class="nav-item" data-view="CALENDAR">日历</span>
+      <span class="nav-item" data-view="PUBLISH">发布</span>
+      <span class="nav-item" data-view="STATS">统计</span>
+      <span class="nav-item" data-view="FEEDBACK">反馈</span>
+      <span class="nav-item" data-view="PROFILE">个人中心</span>
+    </div>
+    <div class="d-none d-md-flex align-items-center gap-3">
+      <div class="position-relative" id="search-wrapper">
+        <input id="search-input" class="search-input" type="text" placeholder="搜索活动...">
+        <div id="search-suggest" class="suggest-dropdown d-none"></div>
+      </div>
+      <div id="auth-area" class="d-flex align-items-center gap-2"></div>
+    </div>
+    <button class="btn btn-link text-light d-md-none" id="mobile-menu-btn">☰</button>
+  </div>
+  <div id="mobile-menu" class="d-md-none mobile-menu d-none">
+    <div class="container py-3">
+      <div class="mb-3">
+        <input id="m-search-input" class="search-input w-100" type="text" placeholder="搜索活动...">
+      </div>
+      <div class="d-flex flex-column gap-3">
+        <span class="nav-item" data-view="HOME">首页</span>
+        <span class="nav-item" data-view="CALENDAR">日历</span>
+        <span class="nav-item" data-view="HOME" data-anchor="activities">活动列表</span>
+        <span class="nav-item" data-view="PUBLISH">发布</span>
+        <span class="nav-item" data-view="STATS">统计</span>
+        <span class="nav-item" data-view="FEEDBACK">反馈</span>
+        <span class="nav-item" data-view="PROFILE">个人中心</span>
+      </div>
+      <div class="pt-3 border-top">
+        <div id="m-auth-area" class="d-flex flex-column gap-2"></div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="view-PROFILE" class="d-block">
+    <div id="profile-wrap"></div>
+  </section>
+</main>
+
+<footer class="bg-white border-top py-4">
+  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+    <div class="mb-3 mb-md-0">
+      <span class="fw-bold fs-5">CampusHub</span>
+    </div>
+    <div class="d-flex gap-3 small text-muted">
+      <span>关于我们</span>
+      <span>隐私政策</span>
+      <span class="cursor-pointer" id="footer-feedback">意见反馈</span>
+    </div>
+  </div>
+  <div class="container mt-3 text-center text-secondary small">© 2025 CampusHub. All rights reserved.</div>
+</footer>
+
+<script src="assets/vendor/jquery-3.7.1.min.js"></script>
+<script src="assets/vendor/bootstrap.bundle-5.3.2.min.js"></script>
+<script src="assets/vendor/echarts-5.5.0.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
