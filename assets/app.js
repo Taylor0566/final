@@ -227,6 +227,7 @@ function loadState() {
       currentUser = JSON.parse(us);
     }
   } catch (e) {}
+  ensureLocalImages();
 }
 function saveEvents() {
   try {
@@ -241,6 +242,20 @@ function saveUser() {
       localStorage.removeItem(LS_USER_KEY);
     }
   } catch (e) {}
+}
+function ensureLocalImages() {
+  events = events.map(function (e) {
+    var src = e.imageUrl || "";
+    var isLocal = typeof src === "string" && src.indexOf("assets/img/") === 0;
+    if (!isLocal) {
+      var n = parseInt(e.id, 10);
+      if (isNaN(n) || n < 1 || n > 12) {
+        n = Math.floor(Math.random() * 12) + 1;
+      }
+      e.imageUrl = "assets/img/event-" + n + ".jpg";
+    }
+    return e;
+  });
 }
 function navigate(view, params) {
   var map = {
@@ -560,14 +575,14 @@ function renderDetail() {
   intro.append('<p class="text-secondary">' + ev.description + "</p>");
   var gallery = $('<div class="row g-3 mt-2"></div>');
   gallery.append(
-    '<div class="col-6"><img src="assets/img/gallery-' +
+    '<div class="col-6"><img src="assets/img/gallery-1-' +
       ev.id +
-      '-1.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
+      '.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
   );
   gallery.append(
-    '<div class="col-6"><img src="assets/img/gallery-' +
+    '<div class="col-6"><img src="assets/img/gallery-2-' +
       ev.id +
-      '-2.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
+      '.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
   );
   intro.append(gallery);
   var comments = $('<div class="mt-4"></div>');
