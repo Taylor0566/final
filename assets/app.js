@@ -220,19 +220,19 @@ function loadState() {
     if (es) {
       events = JSON.parse(es);
     }
-  } catch (e) {}
+  } catch (e) { }
   try {
     var us = localStorage.getItem(LS_USER_KEY);
     if (us) {
       currentUser = JSON.parse(us);
     }
-  } catch (e) {}
+  } catch (e) { }
   ensureLocalImages();
 }
 function saveEvents() {
   try {
     localStorage.setItem(LS_EVENTS_KEY, JSON.stringify(events));
-  } catch (e) {}
+  } catch (e) { }
 }
 function saveUser() {
   try {
@@ -241,7 +241,7 @@ function saveUser() {
     } else {
       localStorage.removeItem(LS_USER_KEY);
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 function ensureLocalImages() {
   events = events.map(function (e) {
@@ -291,8 +291,8 @@ function renderAuth() {
   if (currentUser) {
     area.append(
       '<div id="nav-avatar" class="rounded-circle" style="width:32px;height:32px;border:1px solid #666;display:flex;align-items:center;justify-content:center;background:#0D8ABC;color:#fff;font-weight:700">' +
-        (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "?") +
-        "</div>",
+      (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "?") +
+      "</div>",
     );
     mArea.append(
       '<button class="btn btn-dark rounded-3" id="m-go-profile">个人中心</button>',
@@ -374,15 +374,15 @@ function updateSearchInput() {
       var item = $('<div class="suggest-item"></div>');
       item.append(
         '<div style="width:32px;height:32px;border-radius:8px;overflow:hidden"><img src="' +
-          ev.imageUrl +
-          '" style="width:32px;height:32px;object-fit:cover"></div>',
+        ev.imageUrl +
+        '" style="width:32px;height:32px;object-fit:cover"></div>',
       );
       item.append(
         '<div class="flex-grow-1"><div>' +
-          ev.title +
-          '</div><div class="text-secondary" style="font-size:12px">' +
-          ev.date.split("T")[0] +
-          "</div></div>",
+        ev.title +
+        '</div><div class="text-secondary" style="font-size:12px">' +
+        ev.date.split("T")[0] +
+        "</div></div>",
       );
       item.on("click", function () {
         navigate(ViewState.DETAIL, { id: ev.id });
@@ -431,7 +431,7 @@ function replaceBrand() {
         );
       }
     });
-  } catch (e) {}
+  } catch (e) { }
 }
 function renderHome() {
   var promos = [
@@ -449,8 +449,8 @@ function renderHome() {
     var card = $('<div class="slider-card"></div>');
     card.append(
       '<div class="rounded-2xl shadow-soft" style="width:22rem;height:13rem;overflow:hidden"><img src="' +
-        src +
-        '" style="width:100%;height:100%;object-fit:cover"></div>',
+      src +
+      '" style="width:100%;height:100%;object-fit:cover"></div>',
     );
     track.append(card);
   });
@@ -470,8 +470,8 @@ function renderHome() {
     var active = filter === cat;
     var btn = $(
       '<button class="btn btn-pill ' +
-        (active ? "btn-dark" : "btn-light") +
-        '"></button>',
+      (active ? "btn-dark" : "btn-light") +
+      '"></button>',
     );
     btn.text(txt);
     btn.on("click", function () {
@@ -509,14 +509,14 @@ function renderHome() {
       var date = new Date(event.date).toLocaleDateString();
       body.append(
         '<div class="evt-meta">' +
-          date +
-          '<span class="dot">•</span>' +
-          event.location +
-          '<span class="dot">•</span>' +
-          event.attendees +
-          " / " +
-          event.maxAttendees +
-          " 已报名</div>",
+        date +
+        '<span class="dot">•</span>' +
+        event.location +
+        '<span class="dot">•</span>' +
+        event.attendees +
+        " / " +
+        event.maxAttendees +
+        " 已报名</div>",
       );
       card.append(body);
       card.on("click", function () {
@@ -576,13 +576,13 @@ function renderDetail() {
   var gallery = $('<div class="row g-3 mt-2"></div>');
   gallery.append(
     '<div class="col-6"><img src="assets/img/gallery-1-' +
-      ev.id +
-      '.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
+    ev.id +
+    '.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
   );
   gallery.append(
     '<div class="col-6"><img src="assets/img/gallery-2-' +
-      ev.id +
-      '.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
+    ev.id +
+    '.jpg" class="rounded-2xl" style="width:100%;height:12rem;object-fit:cover"></div>',
   );
   intro.append(gallery);
   var comments = $('<div class="mt-4"></div>');
@@ -596,18 +596,18 @@ function renderDetail() {
       var item = $('<div class="d-flex gap-2 mb-3"></div>');
       item.append(
         '<div class="rounded-circle" style="width:40px;height:40px;background:linear-gradient(135deg,#60a5fa,#a78bfa);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">' +
-          c.userName[0] +
-          "</div>",
+        c.userName[0] +
+        "</div>",
       );
       var bubble = $(
         '<div class="bg-light p-3 rounded-2xl" style="flex:1"></div>',
       );
       bubble.append(
         '<div class="d-flex justify-content之间 mb-1"><span class="fw-semibold">' +
-          c.userName +
-          '</span><span class="text-secondary" style="font-size:12px">' +
-          c.date +
-          "</span></div>",
+        c.userName +
+        '</span><span class="text-secondary" style="font-size:12px">' +
+        c.date +
+        "</span></div>",
       );
       bubble.append("<div>" + c.content + "</div>");
       item.append(bubble);
@@ -662,38 +662,38 @@ function renderDetail() {
   }
   card.append(
     '<div class="text-center mb-3 pb-3 border-bottom"><div class="text-secondary text-uppercase fw-bold" style="font-size:12px">距离活动开始</div><div class="text-primary fw-bold" style="font-family:monospace;font-size:20px">' +
-      leftText +
-      "</div></div>",
+    leftText +
+    "</div></div>",
   );
   card.append(
     '<div class="d-flex justify内容-between mb-2"><span class="text-secondary">主办方</span><span class="fw-medium bg-light rounded-pill px-2">' +
-      ev.organizer +
-      "</span></div>",
+    ev.organizer +
+    "</span></div>",
   );
   card.append(
     '<div class="d-flex justify内容-between mb-2"><span class="text-secondary">热度</span><span class="fw-medium">🔥 ' +
-      (ev.attendees * 15 + 200) +
-      "</span></div>",
+    (ev.attendees * 15 + 200) +
+    "</span></div>",
   );
   var percent = Math.min((ev.attendees / ev.maxAttendees) * 100, 100);
   card.append(
     '<div class="mb-3"><div class="d-flex justify内容-between text-secondary"><span>报名进度</span><span>' +
-      ev.attendees +
-      " / " +
-      ev.maxAttendees +
-      '</span></div><div class="progress-wrap"><div class="progress-bar-apple" style="width:' +
-      percent +
-      '%"></div></div></div>',
+    ev.attendees +
+    " / " +
+    ev.maxAttendees +
+    '</span></div><div class="progress-wrap"><div class="progress-bar-apple" style="width:' +
+    percent +
+    '%"></div></div></div>',
   );
   var isReg = currentUser
     ? ev.registeredUsers.indexOf(currentUser.id) > -1
     : false;
   var regBtn = $(
     '<button class="btn btn-pill w-100 mb-2 ' +
-      (isReg ? "btn-success" : "btn-primary") +
-      '">' +
-      (isReg ? "已报名" : "立即报名") +
-      "</button>",
+    (isReg ? "btn-success" : "btn-primary") +
+    '">' +
+    (isReg ? "已报名" : "立即报名") +
+    "</button>",
   );
   regBtn.on("click", function () {
     if (!currentUser) {
@@ -726,8 +726,8 @@ function renderDetail() {
     : false;
   var favBtn = $(
     '<button class="btn btn-outline-danger btn-pill w-50 me-2">' +
-      (isFav ? "已收藏" : "收藏") +
-      "</button>",
+    (isFav ? "已收藏" : "收藏") +
+    "</button>",
   );
   favBtn.on("click", function () {
     if (!currentUser) {
@@ -761,7 +761,7 @@ function renderDetail() {
     if (navigator.share) {
       navigator
         .share({ title: ev.title, text: ev.description, url: url })
-        .catch(function () {});
+        .catch(function () { });
     } else {
       var shareBox =
         '<div class="text-break small p-2 bg-light rounded-2">' +
@@ -784,7 +784,7 @@ function renderDetail() {
       inner.append('<button class="btn btn-light mt-3">关闭</button>');
       inner.find("#copy-link-btn").on("click", function () {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).catch(function () {});
+          navigator.clipboard.writeText(url).catch(function () { });
         }
       });
       inner.find("button").on("click", function () {
@@ -953,8 +953,8 @@ function renderStats() {
     var card = $('<div class="bg-white p-4 rounded-4 shadow-sm h-100"></div>');
     card.append(
       '<div class="text-secondary text-uppercase fw-bold" style="font-size:12px">' +
-        c.title +
-        "</div>",
+      c.title +
+      "</div>",
     );
     card.append('<div class="fs-3 fw-bold">' + c.value + "</div>");
     col.append(card);
@@ -1100,7 +1100,7 @@ function renderLogin() {
     currentUser = {
       id: "user_123",
       name: "梁升富",
-      email: "LiangShengFu_2023152006@university.edu",
+      email: "LiangShengFu_2023152006@email.szu.edu.cn",
       avatar: "assets/img/avatar.jpg",
       role: "student",
     };
@@ -1177,8 +1177,8 @@ function renderProfile() {
   var row = $('<div class="d-flex align-items-end gap-3"></div>');
   row.append(
     '<img src="' +
-      currentUser.avatar +
-      '" class="rounded-circle border" style="width:120px;height:120px;border:6px solid #fff">',
+    currentUser.avatar +
+    '" class="rounded-circle border" style="width:120px;height:120px;border:6px solid #fff">',
   );
   var right = $(
     '<div class="d-flex justify-content-between flex-grow-1 align-items-end"></div>',
@@ -1189,8 +1189,8 @@ function renderProfile() {
   );
   nameBlock.append(
     '<div class="text-muted">@' +
-      currentUser.email.split("@")[0] +
-      " • 计算机科学学院</div>",
+    currentUser.email.split("@")[0] +
+    " • 计算机科学学院</div>",
   );
   nameBlock.append(
     '<div class="text-secondary" style="max-width:560px">热爱编程与设计的全栈开发者。喜欢参与黑客马拉松和各类创意市集。CampusVerse 早期核心贡献者。</div>',
@@ -1221,22 +1221,22 @@ function renderProfile() {
   });
   statWrap.append(
     '<div class="d-flex gap-4"><div><div class="fs-4 fw-bold">' +
-      myEvents.length +
-      '</div><div class="text-secondary small">参与活动</div></div><div><div class="fs-4 fw-bold">' +
-      myFavs.length +
-      '</div><div class="text-secondary small">收藏活动</div></div><div><div class="fs-4 fw-bold">980</div><div class="text-secondary small">社区声望</div></div></div>',
+    myEvents.length +
+    '</div><div class="text-secondary small">参与活动</div></div><div><div class="fs-4 fw-bold">' +
+    myFavs.length +
+    '</div><div class="text-secondary small">收藏活动</div></div><div><div class="fs-4 fw-bold">980</div><div class="text-secondary small">社区声望</div></div></div>',
   );
   wrap.append(statWrap);
   var tabs = $('<div class="container d-flex gap-4 border-bottom"></div>');
   var t1 = $(
     '<button class="btn btn-link fw-bold">我的活动 (' +
-      myEvents.length +
-      ")</button>",
+    myEvents.length +
+    ")</button>",
   );
   var t2 = $(
     '<button class="btn btn-link fw-bold">收藏 (' +
-      myFavs.length +
-      ")</button>",
+    myFavs.length +
+    ")</button>",
   );
   var t3 = $('<button class="btn btn-link fw-bold">动态与评论</button>');
   var t4 = $('<button class="btn btn-link fw-bold">荣誉徽章</button>');
@@ -1253,17 +1253,17 @@ function renderProfile() {
         var card = $('<div class="card-evt"></div>');
         card.append(
           '<div class="card-evt-img"><img src="' +
-            ev.imageUrl +
-            '"><div class="badge-cat">已报名</div></div>',
+          ev.imageUrl +
+          '"><div class="badge-cat">已报名</div></div>',
         );
         card.append(
           '<div class="p-3"><div class="fw-bold">' +
-            ev.title +
-            '</div><div class="text-secondary" style="font-size:12px">' +
-            new Date(ev.date).toLocaleDateString() +
-            " • " +
-            ev.location +
-            "</div></div>",
+          ev.title +
+          '</div><div class="text-secondary" style="font-size:12px">' +
+          new Date(ev.date).toLocaleDateString() +
+          " • " +
+          ev.location +
+          "</div></div>",
         );
         card.on("click", function () {
           selectedEvent = ev;
@@ -1288,17 +1288,17 @@ function renderProfile() {
         var card = $('<div class="card-evt"></div>');
         card.append(
           '<div class="card-evt-img"><img src="' +
-            ev.imageUrl +
-            '"><div class="badge-cat">❤</div></div>',
+          ev.imageUrl +
+          '"><div class="badge-cat">❤</div></div>',
         );
         card.append(
           '<div class="p-3"><div class="fw-bold">' +
-            ev.title +
-            '</div><div class="text-secondary" style="font-size:12px">' +
-            new Date(ev.date).toLocaleDateString() +
-            " • " +
-            ev.location +
-            "</div></div>",
+          ev.title +
+          '</div><div class="text-secondary" style="font-size:12px">' +
+          new Date(ev.date).toLocaleDateString() +
+          " • " +
+          ev.location +
+          "</div></div>",
         );
         card.on("click", function () {
           selectedEvent = ev;
@@ -1323,14 +1323,14 @@ function renderProfile() {
       var item = $('<div class="d-flex gap-2 p-3 bg-light rounded-2xl"></div>');
       item.append(
         '<img src="' +
-          currentUser.avatar +
-          '" class="rounded-circle border" style="width:40px;height:40px">',
+        currentUser.avatar +
+        '" class="rounded-circle border" style="width:40px;height:40px">',
       );
       var text = $("<div></div>");
       text.append(
         '<div class="d-flex align-items-center gap-2 mb-1"><span class="fw-bold">' +
-          currentUser.name +
-          '</span><span class="text-secondary small">2天前</span></div>',
+        currentUser.name +
+        '</span><span class="text-secondary small">2天前</span></div>',
       );
       text.append(
         "<div>这次的活动组织得非常棒，特别是最后的嘉宾分享环节，受益匪浅！希望下次能增加更多的互动时间。</div>",
@@ -1409,10 +1409,10 @@ function renderGuestProfile() {
     var card = $('<div class="text-center"></div>');
     card.append(
       '<div class="rounded-2xl shadow-sm bg-white d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;color:' +
-        color +
-        '">' +
-        icon +
-        "</div>",
+      color +
+      '">' +
+      icon +
+      "</div>",
     );
     card.append('<h5 class="fw-bold mt-3">' + title + "</h5>");
     card.append('<div class="text-secondary">' + desc + "</div>");
@@ -1537,10 +1537,10 @@ function renderCalendar() {
       y === today.getFullYear();
     cell.append(
       '<div class="d-flex justify-content-between"><div class="calendar-day ' +
-        (isToday ? "bg-primary text-white" : "") +
-        '">' +
-        d +
-        "</div></div>",
+      (isToday ? "bg-primary text-white" : "") +
+      '">' +
+      d +
+      "</div></div>",
     );
     var list = $("<div></div>");
     var dayEvents = events.filter(function (e) {
@@ -1556,8 +1556,8 @@ function renderCalendar() {
       );
       item.append(
         '<div class="text-secondary" style="font-size:10px">' +
-          new Date(ev.date).getHours() +
-          ":00</div>",
+        new Date(ev.date).getHours() +
+        ":00</div>",
       );
       item.on("click", function (e) {
         e.stopPropagation();
