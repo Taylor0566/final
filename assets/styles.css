@@ -490,3 +490,25 @@ main {
   background: #0077ed;
   color: #fff;
 }
+
+.hover-opacity-100:hover {
+  opacity: 1 !important;
+}
+.transition-opacity {
+  transition: opacity 0.2s ease;
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+  animation: shake 0.5s;
+}
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+.text-danger {
+  color: #dc3545 !important;
+}

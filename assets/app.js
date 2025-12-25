@@ -225,6 +225,13 @@ function loadState() {
     var us = localStorage.getItem(LS_USER_KEY);
     if (us) {
       currentUser = JSON.parse(us);
+      // Ensure new fields exist
+      if (currentUser) {
+          if (!currentUser.username) currentUser.username = "@" + (currentUser.id ? currentUser.id.replace("user_", "") : "user");
+          if (!currentUser.college) currentUser.college = "未设置学院";
+          if (!currentUser.bio) currentUser.bio = "这个人很懒，什么都没有写。";
+          if (!currentUser.social) currentUser.social = "";
+      }
     }
   } catch (e) { }
   ensureLocalImages();
@@ -289,11 +296,20 @@ function renderAuth() {
   area.empty();
   mArea.empty();
   if (currentUser) {
-    area.append(
-      '<div id="nav-avatar" class="rounded-circle" style="width:32px;height:32px;border:1px solid #666;display:flex;align-items:center;justify-content:center;background:#0D8ABC;color:#fff;font-weight:700">' +
-      (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "?") +
-      "</div>",
-    );
+    // 优先显示头像图片，如果没有则显示名字首字母
+    var avatarContent = '';
+    if (currentUser.avatar && currentUser.avatar.indexOf('assets/img/avatar.jpg') === -1) {
+        // 用户自定义头像
+        avatarContent = '<div id="nav-avatar" class="rounded-circle" style="width:32px;height:32px;border:1px solid #666;background-image:url(' + currentUser.avatar + ');background-size:cover;background-position:center;cursor:pointer"></div>';
+    } else {
+        // 默认头像或名字首字母
+        // 这里为了统一，我们尽量显示图片。如果只有默认头像，也可以显示图片。
+        // 但既然用户反馈说想要头像，那我们就直接显示图片吧。
+        // 如果是默认头像路径，我们也显示它
+        avatarContent = '<div id="nav-avatar" class="rounded-circle" style="width:32px;height:32px;border:1px solid #666;background-image:url(' + (currentUser.avatar || 'assets/img/avatar.jpg') + ');background-size:cover;background-position:center;cursor:pointer"></div>';
+    }
+    
+    area.append(avatarContent);
     mArea.append(
       '<button class="btn btn-dark rounded-3" id="m-go-profile">个人中心</button>',
     );
@@ -833,6 +849,16 @@ function renderDetail() {
   actions.append(favBtn).append(shareBtn);
   card.append(actions);
   card.append(icsBtn);
+  if (currentUser && ev.publisherId === currentUser.id) {
+      var editBtn = $('<button class="btn btn-outline-dark btn-pill w-100 mt-2">编辑活动</button>');
+      editBtn.on('click', function() {
+          // Edit logic (simplified: delete and redirect to publish with prefill?)
+          // For now, let's just alert
+          alert("编辑功能开发中...");
+      });
+      card.append(editBtn);
+  }
+  
   colSide.append(card);
   row.append(colMain).append(colSide);
   main.append(row);
@@ -867,6 +893,68 @@ function renderPublish() {
   descWrap.append(
     '<textarea required name="description" rows="8" class="form-control rounded-3" placeholder="请描述活动的具体流程、嘉宾介绍及参与须知..."></textarea>',
   );
+  
+  // Image Upload Section
+  var imgWrap = $('<div class="mt-3"></div>');
+  imgWrap.append('<label class="form-label fw-bold mb-2">活动图片 (最多3张)</label>');
+  var imgContainer = $('<div class="d-flex gap-3 flex-wrap" id="publish-img-container"></div>');
+  
+  // Add button
+  var addBtn = $('<div class="d-flex align-items-center justify-content-center border rounded-3 bg-light" style="width:100px;height:100px;cursor:pointer;border-style:dashed!important"><span class="fs-1 text-secondary">+</span></div>');
+  var fileInput = $('<input type="file" accept="image/*" multiple style="display:none">');
+  
+  var uploadedImages = []; // Store base64 strings
+  
+  function renderImages() {
+      imgContainer.find('.img-preview').remove();
+      uploadedImages.forEach(function(src, idx) {
+          var preview = $('<div class="position-relative img-preview" style="width:100px;height:100px"></div>');
+          preview.append('<img src="'+src+'" class="rounded-3" style="width:100%;height:100%;object-fit:cover">');
+          var delBtn = $('<button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 translate-middle p-0 d-flex align-items-center justify-content-center" style="width:20px;height:20px">×</button>');
+          delBtn.on('click', function() {
+              uploadedImages.splice(idx, 1);
+              renderImages();
+          });
+          preview.append(delBtn);
+          addBtn.before(preview);
+      });
+      
+      if (uploadedImages.length >= 3) {
+          addBtn.addClass('d-none');
+      } else {
+          addBtn.removeClass('d-none');
+      }
+  }
+  
+  addBtn.on('click', function() {
+      fileInput.click();
+  });
+  
+  fileInput.on('change', function() {
+      var files = Array.from(this.files);
+      var remainingSlots = 3 - uploadedImages.length;
+      var toProcess = files.slice(0, remainingSlots);
+      
+      var processed = 0;
+      toProcess.forEach(function(file) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+              uploadedImages.push(e.target.result);
+              processed++;
+              if (processed === toProcess.length) {
+                  renderImages();
+              }
+          };
+          reader.readAsDataURL(file);
+      });
+      // Reset input so same file can be selected again if needed
+      this.value = '';
+  });
+  
+  imgContainer.append(addBtn);
+  imgWrap.append(imgContainer);
+  imgWrap.append(fileInput);
+  
   var org = $('<div class="mt-2"></div>');
   org.append(
     '<label class="form-label fw-bold">主办方</label><input required type="text" name="organizer" class="form-control rounded-3" placeholder="例如：校学生会">',
@@ -879,7 +967,7 @@ function renderPublish() {
     '<button type="submit" class="btn btn-primary rounded-pill flex-grow-1">立即发布</button>',
   );
   actions.append(cancel).append(submit);
-  form.append(grid).append(grid2).append(descWrap).append(org).append(actions);
+  form.append(grid).append(grid2).append(descWrap).append(imgWrap).append(org).append(actions);
   wrap.append(form);
   $("#publish-back")
     .off()
@@ -912,7 +1000,12 @@ function renderPublish() {
       comments: [],
       registeredUsers: [],
       favoritedUsers: [],
+      publisherId: currentUser ? currentUser.id : null // Bind publisher
     };
+    if (uploadedImages.length > 0) {
+        newEvent.imageUrl = uploadedImages[0];
+        newEvent.gallery = uploadedImages;
+    }
     events = [newEvent].concat(events);
     setView(ViewState.HOME);
   });
@@ -1086,6 +1179,7 @@ function renderLogin() {
   var btn = $(
     '<button type="submit" class="btn btn-primary rounded-pill w-100">登录</button>',
   );
+  form.append('<div id="login-error" class="text-danger small mb-3 text-center d-none"></div>');
   form.append(btn);
   box.append(form);
   box.append(
@@ -1108,28 +1202,86 @@ function renderLogin() {
 
   form.on("submit", function (e) {
     e.preventDefault();
-    var account = $("input[type=text]").val();
-    var password = $("input[type=password]").val();
+    $("#login-error").addClass("d-none");
+    var account = form.find("input[type=text]").val().trim();
+    var password = form.find("input[type=password]").val().trim();
 
     // 预设测试账号：2023152006 / 2023152006
-    // 哈希加盐逻辑：salt = account
-    var salt = "2023152006";
-    var targetHash = simpleHash("2023152006" + salt);
-    var inputHash = simpleHash(password + account);
+    // 直接进行明文比较，移除哈希处理以确保登录逻辑最简化
+    
+    var isHardcodedUser = false;
+    if (account === "2023152006" && password === "2023152006") {
+        isHardcodedUser = true;
+    }
+    
+    // 调试日志，方便定位问题
+    console.log("Attempting login with: '" + account + "' and password: '" + password + "'");
+    console.log("isHardcodedUser:", isHardcodedUser);
+    
+    // Check if it's a locally registered user
+    var localUser = null;
+    try {
+        var dbStr = localStorage.getItem("campushub_users_db");
+        console.log("DB Content:", dbStr);
+        var localUsers = JSON.parse(dbStr || "[]");
+        // 注意：本地存储的是明文密码，这里直接比较
+        // 强制类型转换为字符串进行比较，防止数字类型不匹配
+        localUser = localUsers.find(function(u) { 
+            return String(u.studentId).trim() === String(account).trim() && 
+                   String(u.password).trim() === String(password).trim(); 
+        });
+        console.log("Found local user:", localUser);
+    } catch(e) {
+        console.error("Login Error:", e);
+    }
 
-    if (account === "2023152006" && inputHash === targetHash) {
-      currentUser = {
-        id: "user_" + account,
-        name: "梁升富",
-        email: account + "@email.szu.edu.cn",
-        avatar: "assets/img/avatar.jpg",
-        role: "student",
-      };
+    if (isHardcodedUser || localUser) {
+      $("#login-error").addClass("d-none"); // Ensure error is hidden
+      if (localUser) {
+          currentUser = {
+            id: "user_" + localUser.studentId,
+            name: localUser.name,
+            username: "@" + localUser.studentId,
+            email: localUser.email,
+            college: "未设置学院",
+            bio: "这个人很懒，什么都没有写。",
+            social: "",
+            avatar: "assets/img/avatar.jpg",
+            role: "student",
+          };
+      } else {
+          currentUser = {
+            id: "user_" + account,
+            name: "梁升富",
+            username: "@2023152006",
+            email: account + "@email.szu.edu.cn",
+            college: "计算机科学学院",
+            bio: "热爱编程与设计的全栈开发者。喜欢参与黑客马拉松和各类创意市集。CampusVerse 早期核心贡献者。",
+            social: "WeChat: lsf2023 | GitHub: @lsf-dev",
+            avatar: "assets/img/avatar.jpg",
+            role: "student",
+          };
+      }
+      // 尝试合并本地存储的旧数据（如果存在）
+      try {
+        var saved = JSON.parse(localStorage.getItem(LS_USER_KEY));
+        if (saved && saved.id === currentUser.id) {
+           currentUser = Object.assign({}, currentUser, saved);
+        }
+      } catch(e){}
+      
       saveUser();
+      
+      // Clear password field
+      $("input[type=password]").val("");
+      
       setView(ViewState.HOME);
       renderAuth();
     } else {
-      alert("账号或密码错误");
+      $("#login-error").text("账号或密码错误，请重试").removeClass("d-none");
+      // Add shake animation effect
+      $("input").addClass("is-invalid");
+      setTimeout(function() { $("input").removeClass("is-invalid"); }, 500);
     }
   });
 }
@@ -1143,17 +1295,17 @@ function renderRegister() {
   var form = $("<form></form>");
   var row = $('<div class="row g-3"></div>');
   row.append(
-    '<div class="col-md-6"><label class="form-label fw-semibold">姓名</label><input type="text" class="form-control rounded-3" placeholder="张三"></div>',
+    '<div class="col-md-6"><label class="form-label fw-semibold">姓名</label><input type="text" name="name" class="form-control rounded-3" placeholder="张三" required></div>',
   );
   row.append(
-    '<div class="col-md-6"><label class="form-label fw-semibold">学号</label><input type="text" class="form-control rounded-3" placeholder="10位学号"></div>',
+    '<div class="col-md-6"><label class="form-label fw-semibold">学号</label><input type="text" name="studentId" class="form-control rounded-3" placeholder="10位学号" required></div>',
   );
   form.append(row);
   form.append(
-    '<label class="form-label fw-semibold">校园邮箱</label><input type="email" class="form-control rounded-3 mb-2" placeholder="name@university.edu">',
+    '<label class="form-label fw-semibold">校园邮箱</label><input type="email" name="email" class="form-control rounded-3 mb-2" placeholder="name@university.edu" required>',
   );
   form.append(
-    '<label class="form-label fw-semibold">设置密码</label><input type="password" class="form-control rounded-3 mb-3" placeholder="至少8位字符">',
+    '<label class="form-label fw-semibold">设置密码</label><input type="password" name="password" class="form-control rounded-3 mb-3" placeholder="至少8位字符" required>',
   );
   form.append(
     '<button type="submit" class="btn btn-dark rounded-pill w-100">立即注册</button>',
@@ -1168,15 +1320,53 @@ function renderRegister() {
   });
   form.on("submit", function (e) {
     e.preventDefault();
+    var fd = {
+      name: form.find("input[name=name]").val().trim(),
+      studentId: form.find("input[name=studentId]").val().trim(),
+      email: form.find("input[name=email]").val().trim(),
+      password: form.find("input[name=password]").val()
+    };
+    
+    if(fd.password.length < 6) {
+        alert("密码长度至少需要6位");
+        return;
+    }
+
+
+    try {
+        var localUsers = JSON.parse(localStorage.getItem("campushub_users_db") || "[]");
+
+        if (localUsers.find(function(u) { return String(u.studentId).trim() === String(fd.studentId).trim(); })) {
+            alert("该学号已被注册");
+            return;
+        }
+        localUsers.push(fd);
+        localStorage.setItem("campushub_users_db", JSON.stringify(localUsers));
+        console.log("User registered:", fd); // Debug log
+    } catch(e) {
+        console.error("Failed to save user", e);
+    }
+
     currentUser = {
-      id: "user_123",
-      name: "梁升富",
-      email: "LiangShengFu_2023152006@university.edu",
+      id: "user_" + fd.studentId,
+      name: fd.name,
+      username: "@" + fd.studentId,
+      email: fd.email,
+      college: "未设置学院",
+      bio: "这个人很懒，什么都没有写。",
+      social: "",
       avatar: "assets/img/avatar.jpg",
       role: "student",
     };
+    
+    saveUser();
     setView(ViewState.HOME);
     renderAuth();
+    
+    // Show welcome message
+    setTimeout(function() {
+        alert("注册成功！欢迎加入 CampusHub。");
+    }, 500);
   });
 }
 function renderProfile() {
@@ -1199,74 +1389,200 @@ function renderProfile() {
   var info = $(
     '<div class="container position-relative" style="margin-top:-64px"></div>',
   );
-  var row = $('<div class="d-flex align-items-end gap-3"></div>');
-  row.append(
-    '<img src="' +
-    currentUser.avatar +
-    '" class="rounded-circle border" style="width:120px;height:120px;border:6px solid #fff">',
-  );
+  var row = $('<div class="d-flex align-items-end gap-3 flex-wrap"></div>');
+  
+  // Avatar Section with Upload
+  var avatarContainer = $('<div class="position-relative group-avatar" style="cursor:pointer"></div>');
+  var avatarImg = $('<img src="' + currentUser.avatar + '" class="rounded-circle border bg-white" style="width:120px;height:120px;border:6px solid #fff;object-fit:cover">');
+  avatarContainer.append(avatarImg);
+  avatarContainer.append('<div class="position-absolute start-0 top-0 w-100 h-100 rounded-circle d-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-white opacity-0 hover-opacity-100 transition-opacity" style="border:6px solid transparent"><small>更换头像</small></div>');
+  
+  var fileInput = $('<input type="file" accept="image/png, image/jpeg, image/gif" style="display:none">');
+  avatarContainer.append(fileInput);
+  
+  avatarContainer.on('click', function(e) {
+    // 阻止事件冒泡，防止触发其他可能的父级点击事件
+    e.stopPropagation();
+    fileInput.click();
+  });
+  
+  // 阻止文件输入框点击冒泡，避免重复触发
+  fileInput.on('click', function(e) {
+    e.stopPropagation();
+  });
+  
+  fileInput.on('change', function(e) {
+    if (this.files && this.files[0]) {
+      var file = this.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        alert("图片大小不能超过 2MB");
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        // Simple preview and save
+        var result = e.target.result;
+        currentUser.avatar = result;
+        
+        // 立即更新当前页面上的所有头像
+        $("img[src='" + avatarImg.attr('src') + "']").attr('src', result);
+        avatarImg.attr('src', result);
+        
+        // 如果有导航栏头像，也更新它
+        $("#nav-avatar").html('').css({
+            'background-image': 'url(' + result + ')',
+            'background-size': 'cover',
+            'background-position': 'center',
+            'color': 'transparent' // Hide initial letter
+        });
+
+        saveUser();
+        
+        // 不需要完全重绘，只需更新图片源即可，提升体验
+        // renderProfile(); 
+        // renderAuth();
+        
+        alert("头像更新成功！");
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  row.append(avatarContainer);
+
   var right = $(
-    '<div class="d-flex justify-content-between flex-grow-1 align-items-end"></div>',
+    '<div class="d-flex justify-content-between flex-grow-1 align-items-end flex-wrap gap-3"></div>',
   );
   var nameBlock = $("<div></div>");
   nameBlock.append(
-    '<h2 class="fw-bold" style="color:gray">' + currentUser.name + "</h2>",
+    '<h2 class="fw-bold" style="color:#1d1d1f">' + currentUser.name + "</h2>",
   );
-  nameBlock.append(
-    '<div class="text-muted">@' +
-    currentUser.email.split("@")[0] +
-    " • 计算机科学学院</div>",
-  );
-  nameBlock.append(
-    '<div class="text-secondary" style="max-width:560px">热爱编程与设计的全栈开发者。喜欢参与黑客马拉松和各类创意市集。CampusVerse 早期核心贡献者。</div>',
-  );
-  var actions = $('<div class="d-flex gap-2"></div>');
+  
+  var subInfo = $('<div class="text-secondary mt-2"></div>');
+  if (currentUser.username) subInfo.append('<span class="me-2">' + currentUser.username + '</span>');
+  if (currentUser.college) subInfo.append('<span class="me-2">• ' + currentUser.college + '</span>');
+  nameBlock.append(subInfo);
+  
+  if (currentUser.bio) {
+    nameBlock.append(
+      '<div class="text-secondary mt-1" style="max-width:560px">' + currentUser.bio + '</div>',
+    );
+  }
+  
+  if (currentUser.social) {
+      nameBlock.append('<div class="small text-muted mt-1">' + currentUser.social + '</div>');
+  }
+
+  var actions = $('<div class="d-flex gap-2 mb-2"></div>');
   var edit = $('<button class="btn btn-dark btn-pill">编辑资料</button>');
   var share = $('<button class="btn btn-light btn-pill">分享</button>');
+  
+  // Edit Profile Modal
   edit.on("click", function () {
     var modal = $(
       '<div class="modal-dark position-fixed start-0 top-0 end-0 bottom-0 d-flex align-items-center justify-content-center" style="z-index:1050;background:rgba(0,0,0,0.5)"></div>',
     );
     var inner = $(
-      '<div class="bg-white p-4 rounded-4" style="max-width:480px;width:100%"></div>',
+      '<div class="bg-white p-4 rounded-4" style="max-width:480px;width:100%;max-height:90vh;overflow-y:auto"></div>',
     );
     inner.append('<h4 class="fw-bold mb-3">编辑个人资料</h4>');
     var form = $("<form></form>");
-    form.append(
-      '<label class="form-label">姓名</label><input type="text" name="name" class="form-control mb-2" value="' +
-      currentUser.name +
-      '">',
-    );
-    form.append(
-      '<label class="form-label">邮箱</label><input type="email" name="email" class="form-control mb-3" value="' +
-      currentUser.email +
-      '">',
-    );
-    var btns = $('<div class="d-flex justify-content-end gap-2"></div>');
+    
+    // Check for draft
+    var draftKey = "profile_draft_" + currentUser.id;
+    var draft = localStorage.getItem(draftKey);
+    var initialData = draft ? JSON.parse(draft) : currentUser;
+
+    function createInput(label, name, val, type) {
+        type = type || 'text';
+        return '<div class="mb-2"><label class="form-label small fw-bold">' + label + '</label><input type="' + type + '" name="' + name + '" class="form-control" value="' + (val || '') + '"></div>';
+    }
+
+    form.append(createInput("姓名", "name", initialData.name));
+    form.append(createInput("用户名", "username", initialData.username));
+    form.append(createInput("邮箱", "email", initialData.email, "email"));
+    form.append(createInput("学院", "college", initialData.college));
+    
+    form.append('<div class="mb-2"><label class="form-label small fw-bold">个人简介</label><textarea name="bio" class="form-control" rows="3">' + (initialData.bio || '') + '</textarea></div>');
+    
+    form.append(createInput("社交信息", "social", initialData.social));
+    
+    var feedback = $('<div class="text-success small mb-2 d-none" id="save-feedback">已自动保存草稿</div>');
+    form.append(feedback);
+
+    var btns = $('<div class="d-flex justify-content-end gap-2 pt-2 border-top"></div>');
     var cancel = $('<button type="button" class="btn btn-light">取消</button>');
-    var save = $('<button type="submit" class="btn btn-primary">保存</button>');
+    var save = $('<button type="submit" class="btn btn-primary">保存修改</button>');
     btns.append(cancel).append(save);
     form.append(btns);
     inner.append(form);
     modal.append(inner);
     $("body").append(modal);
 
+    // Auto-save logic
+    form.find('input, textarea').on('input', function() {
+        var data = {
+            name: form.find('input[name="name"]').val(),
+            username: form.find('input[name="username"]').val(),
+            email: form.find('input[name="email"]').val(),
+            college: form.find('input[name="college"]').val(),
+            bio: form.find('textarea[name="bio"]').val(),
+            social: form.find('input[name="social"]').val()
+        };
+        localStorage.setItem(draftKey, JSON.stringify(data));
+        $('#save-feedback').removeClass('d-none').text('正在保存草稿...').fadeIn();
+        setTimeout(function(){ $('#save-feedback').text('已自动保存草稿'); }, 500);
+    });
+
     cancel.on("click", function () {
-      modal.remove();
+      if(confirm("确定要放弃修改吗？")) {
+        localStorage.removeItem(draftKey); // Clear draft on cancel? Or keep it? Let's clear it if they explicitly cancel.
+        modal.remove();
+      }
     });
 
     form.on("submit", function (e) {
       e.preventDefault();
       var newName = form.find('input[name="name"]').val();
-      var newEmail = form.find('input[name="email"]').val();
-      if (newName && newEmail) {
-        currentUser.name = newName;
-        currentUser.email = newEmail;
-        saveUser();
-        renderProfile();
-        renderAuth();
-        modal.remove();
+      if (!newName) { alert("姓名不能为空"); return; }
+      
+      currentUser.name = newName;
+      currentUser.username = form.find('input[name="username"]').val();
+      currentUser.email = form.find('input[name="email"]').val();
+      currentUser.college = form.find('input[name="college"]').val();
+      currentUser.bio = form.find('textarea[name="bio"]').val();
+      currentUser.social = form.find('input[name="social"]').val();
+      
+      saveUser();
+      
+      // Update local storage user db as well if user exists there
+      try {
+          var localUsers = JSON.parse(localStorage.getItem("campushub_users_db") || "[]");
+          var userIdx = localUsers.findIndex(function(u) { 
+              return u.studentId === currentUser.id.replace("user_", "") || u.studentId === currentUser.id; 
+          });
+          
+          if (userIdx > -1) {
+              // Update only editable fields
+              localUsers[userIdx].name = currentUser.name;
+              localUsers[userIdx].email = currentUser.email;
+              // We don't store bio/social in simple db yet, but we should if we want persistence across sessions for db users
+              // For now, saveUser() updates the 'campushub_user' key which is the session
+          }
+          localStorage.setItem("campushub_users_db", JSON.stringify(localUsers));
+      } catch(e) {
+          console.error("Failed to sync user db", e);
       }
+
+      localStorage.removeItem(draftKey); // Clear draft
+      renderProfile();
+      renderAuth();
+      modal.remove();
+      
+      // Show success toast
+      var toast = $('<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100"><div class="toast show bg-dark text-white"><div class="toast-body">个人资料保存成功！</div></div></div>');
+      $('body').append(toast);
+      setTimeout(function(){ toast.fadeOut(function(){ toast.remove(); }); }, 2000);
     });
   });
 
@@ -1362,136 +1678,54 @@ function renderProfile() {
   );
   var t3 = $('<button class="btn btn-link fw-bold">动态与评论</button>');
   var t4 = $('<button class="btn btn-link fw-bold">荣誉徽章</button>');
-  tabs.append(t1).append(t2).append(t3).append(t4);
+  var t5 = $('<button class="btn btn-link fw-bold">我发布的</button>');
+  tabs.append(t1).append(t2).append(t5).append(t3).append(t4);
   wrap.append(tabs);
   var content = $('<div class="container py-3" id="profile-content"></div>');
   wrap.append(content);
-  function showAct() {
-    content.empty();
-    if (myEvents.length) {
-      var row = $('<div class="row g-3"></div>');
-      myEvents.forEach(function (ev) {
-        var col = $('<div class="col-md-4"></div>');
-        var card = $('<div class="card-evt"></div>');
-        card.append(
-          '<div class="card-evt-img"><img src="' +
-          ev.imageUrl +
-          '"><div class="badge-cat">已报名</div></div>',
-        );
-        card.append(
-          '<div class="p-3"><div class="fw-bold">' +
-          ev.title +
-          '</div><div class="text-secondary" style="font-size:12px">' +
-          new Date(ev.date).toLocaleDateString() +
-          " • " +
-          ev.location +
-          "</div></div>",
-        );
-        card.on("click", function () {
-          selectedEvent = ev;
-          navigate(ViewState.DETAIL, { id: ev.id });
-        });
-        col.append(card);
-        row.append(col);
+  function showPublished() {
+      content.empty();
+      var myPublished = events.filter(function(e) {
+          return currentUser && e.publisherId === currentUser.id;
       });
-      content.append(row);
-    } else {
-      content.append(
-        '<div class="text-center text-secondary py-4 bg-light rounded-2xl">你还没有报名任何活动。</div>',
-      );
-    }
-  }
-  function showFav() {
-    content.empty();
-    if (myFavs.length) {
-      var row = $('<div class="row g-3"></div>');
-      myFavs.forEach(function (ev) {
-        var col = $('<div class="col-md-4"></div>');
-        var card = $('<div class="card-evt"></div>');
-        card.append(
-          '<div class="card-evt-img"><img src="' +
-          ev.imageUrl +
-          '"><div class="badge-cat">❤</div></div>',
-        );
-        card.append(
-          '<div class="p-3"><div class="fw-bold">' +
-          ev.title +
-          '</div><div class="text-secondary" style="font-size:12px">' +
-          new Date(ev.date).toLocaleDateString() +
-          " • " +
-          ev.location +
-          "</div></div>",
-        );
-        card.on("click", function () {
-          selectedEvent = ev;
-          setView(ViewState.DETAIL);
+      
+      if (myPublished.length) {
+        var row = $('<div class="row g-3"></div>');
+        myPublished.forEach(function (ev) {
+          var col = $('<div class="col-md-4"></div>');
+          var card = $('<div class="card-evt"></div>');
+          card.append(
+            '<div class="card-evt-img"><img src="' +
+            ev.imageUrl +
+            '"><div class="badge-cat bg-dark text-white">管理</div></div>',
+          );
+          card.append(
+            '<div class="p-3"><div class="fw-bold">' +
+            ev.title +
+            '</div><div class="text-secondary" style="font-size:12px">' +
+            new Date(ev.date).toLocaleDateString() +
+            " • " +
+            ev.attendees + " 已报名" +
+            "</div></div>",
+          );
+          card.on("click", function () {
+            selectedEvent = ev;
+            navigate(ViewState.DETAIL, { id: ev.id });
+          });
+          col.append(card);
+          row.append(col);
         });
-        col.append(card);
-        row.append(col);
-      });
-      content.append(row);
-    } else {
-      content.append(
-        '<div class="text-center text-secondary py-4 bg-light rounded-2xl">你还没有收藏任何活动。</div>',
-      );
-    }
+        content.append(row);
+      } else {
+        content.append(
+          '<div class="text-center text-secondary py-4 bg-light rounded-2xl">你还没有发布过活动。</div>',
+        );
+      }
   }
-  function showMoments() {
-    content.empty();
-    var list = $(
-      '<div class="d-flex flex-column gap-3" style="max-width:760px"></div>',
-    );
-    [1, 2].forEach(function (i) {
-      var item = $('<div class="d-flex gap-2 p-3 bg-light rounded-2xl"></div>');
-      item.append(
-        '<img src="' +
-        currentUser.avatar +
-        '" class="rounded-circle border" style="width:40px;height:40px">',
-      );
-      var text = $("<div></div>");
-      text.append(
-        '<div class="d-flex align-items-center gap-2 mb-1"><span class="fw-bold">' +
-        currentUser.name +
-        '</span><span class="text-secondary small">2天前</span></div>',
-      );
-      text.append(
-        "<div>这次的活动组织得非常棒，特别是最后的嘉宾分享环节，受益匪浅！希望下次能增加更多的互动时间。</div>",
-      );
-      text.append(
-        '<div class="text-secondary small border rounded-pill px-2 py-1 mt-2 d-inline-block"># 2025 秋季创新论坛</div>',
-      );
-      item.append(text);
-      list.append(item);
-    });
-    content.append(list);
-  }
-  function showBadges() {
-    content.empty();
-    var row = $('<div class="row g-3"></div>');
-    var badges = [
-      { icon: "🌟", name: "早期用户", desc: "注册超过1年" },
-      { icon: "🔥", name: "活动达人", desc: "单月参与5场活动" },
-      { icon: "🎓", name: "学术之星", desc: "参与10场学术讲座" },
-      { icon: "📸", name: "记录者", desc: "发布了20条评论" },
-    ];
-    badges.forEach(function (b) {
-      var col = $('<div class="col-6 col-md-3"></div>');
-      var card = $(
-        '<div class="p-3 rounded-2xl border text-center bg-light"></div>',
-      );
-      card.append('<div style="font-size:40px">' + b.icon + "</div>");
-      card.append('<div class="fw-bold">' + b.name + "</div>");
-      card.append('<div class="text-secondary small">' + b.desc + "</div>");
-      col.append(card);
-      row.append(col);
-    });
-    row.append(
-      '<div class="col-6 col-md-3"><div class="border border-dashed p-3 rounded-2xl text-center text-secondary"><div class="rounded-circle bg-light" style="width:48px;height:48px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center">?</div><div class="small">更多成就待解锁</div></div></div>',
-    );
-    content.append(row);
-  }
+  
   t1.on("click", showAct);
   t2.on("click", showFav);
+  t5.on("click", showPublished);
   t3.on("click", showMoments);
   t4.on("click", showBadges);
   showAct();
@@ -1707,7 +1941,8 @@ function fixBrandTexts() {
       $(this).html(t.replace(/CampusVerse/g, "CampusHub"));
     }
   });
-  fixProfileAvatar();
+  // fixProfileAvatar(); // Disabled to allow custom avatars
+  /*
   var tabs = $("#profile-wrap .container.d-flex.gap-4.border-bottom button");
   if (tabs.length >= 3) {
     tabs
@@ -1717,37 +1952,13 @@ function fixBrandTexts() {
         setTimeout(fixMomentsAvatars, 0);
       });
   }
+  */
 }
 function fixProfileAvatar() {
-  if (!currentUser) return;
-  var img = $("#profile-wrap img.rounded-circle.border").first();
-  if (img.length) {
-    var letter = currentUser.name
-      ? currentUser.name.charAt(0).toUpperCase()
-      : "?";
-    var el = $('<div class="rounded-circle border"></div>');
-    el.attr(
-      "style",
-      "width:120px;height:120px;border:6px solid #fff;display:flex;align-items:center;justify-content:center;background:#0D8ABC;color:#fff;font-size:48px;font-weight:800",
-    );
-    el.text(letter);
-    img.replaceWith(el);
-  }
+  // Disabled
 }
 function fixMomentsAvatars() {
-  if (!currentUser) return;
-  $("#profile-content img.rounded-circle.border").each(function () {
-    var letter = currentUser.name
-      ? currentUser.name.charAt(0).toUpperCase()
-      : "?";
-    var el = $('<div class="rounded-circle border"></div>');
-    el.attr(
-      "style",
-      "width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#0D8ABC;color:#fff;font-weight:700",
-    );
-    el.text(letter);
-    $(this).replaceWith(el);
-  });
+  // Disabled
 }
 function init() {
   loadState();
