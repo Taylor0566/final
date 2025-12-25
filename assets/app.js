@@ -1095,17 +1095,42 @@ function renderLogin() {
   $("#to-register").on("click", function () {
     setView(ViewState.REGISTER);
   });
+  // 简单的哈希函数（模拟用）
+  function simpleHash(str) {
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+      var char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString(16);
+  }
+
   form.on("submit", function (e) {
     e.preventDefault();
-    currentUser = {
-      id: "user_123",
-      name: "梁升富",
-      email: "LiangShengFu_2023152006@email.szu.edu.cn",
-      avatar: "assets/img/avatar.jpg",
-      role: "student",
-    };
-    setView(ViewState.HOME);
-    renderAuth();
+    var account = $("input[type=text]").val();
+    var password = $("input[type=password]").val();
+
+    // 预设测试账号：2023152006 / 2023152006
+    // 哈希加盐逻辑：salt = account
+    var salt = "2023152006";
+    var targetHash = simpleHash("2023152006" + salt);
+    var inputHash = simpleHash(password + account);
+
+    if (account === "2023152006" && inputHash === targetHash) {
+      currentUser = {
+        id: "user_" + account,
+        name: "梁升富",
+        email: account + "@email.szu.edu.cn",
+        avatar: "assets/img/avatar.jpg",
+        role: "student",
+      };
+      saveUser();
+      setView(ViewState.HOME);
+      renderAuth();
+    } else {
+      alert("账号或密码错误");
+    }
   });
 }
 function renderRegister() {
@@ -1198,6 +1223,103 @@ function renderProfile() {
   var actions = $('<div class="d-flex gap-2"></div>');
   var edit = $('<button class="btn btn-dark btn-pill">编辑资料</button>');
   var share = $('<button class="btn btn-light btn-pill">分享</button>');
+  edit.on("click", function () {
+    var modal = $(
+      '<div class="modal-dark position-fixed start-0 top-0 end-0 bottom-0 d-flex align-items-center justify-content-center" style="z-index:1050;background:rgba(0,0,0,0.5)"></div>',
+    );
+    var inner = $(
+      '<div class="bg-white p-4 rounded-4" style="max-width:480px;width:100%"></div>',
+    );
+    inner.append('<h4 class="fw-bold mb-3">编辑个人资料</h4>');
+    var form = $("<form></form>");
+    form.append(
+      '<label class="form-label">姓名</label><input type="text" name="name" class="form-control mb-2" value="' +
+      currentUser.name +
+      '">',
+    );
+    form.append(
+      '<label class="form-label">邮箱</label><input type="email" name="email" class="form-control mb-3" value="' +
+      currentUser.email +
+      '">',
+    );
+    var btns = $('<div class="d-flex justify-content-end gap-2"></div>');
+    var cancel = $('<button type="button" class="btn btn-light">取消</button>');
+    var save = $('<button type="submit" class="btn btn-primary">保存</button>');
+    btns.append(cancel).append(save);
+    form.append(btns);
+    inner.append(form);
+    modal.append(inner);
+    $("body").append(modal);
+
+    cancel.on("click", function () {
+      modal.remove();
+    });
+
+    form.on("submit", function (e) {
+      e.preventDefault();
+      var newName = form.find('input[name="name"]').val();
+      var newEmail = form.find('input[name="email"]').val();
+      if (newName && newEmail) {
+        currentUser.name = newName;
+        currentUser.email = newEmail;
+        saveUser();
+        renderProfile();
+        renderAuth();
+        modal.remove();
+      }
+    });
+  });
+
+  share.on("click", function () {
+    var url = window.location.href;
+    var shareText = "来看看我的 CampusHub 个人主页！";
+    if (navigator.share) {
+      navigator
+        .share({ title: "我的主页", text: shareText, url: url })
+        .catch(function () { });
+    } else {
+      var modal = $(
+        '<div class="modal-dark position-fixed start-0 top-0 end-0 bottom-0 d-flex align-items-center justify-content-center" style="z-index:1050;background:rgba(0,0,0,0.5)"></div>',
+      );
+      var inner = $(
+        '<div class="bg-white p-4 rounded-4 text-center" style="max-width:380px;width:100%"></div>',
+      );
+      inner.append('<h5 class="fw-bold mb-3">分享主页</h5>');
+      inner.append(
+        '<div class="text-break small p-2 bg-light rounded-2 mb-3">' +
+        url +
+        "</div>",
+      );
+      var copyBtn = $(
+        '<button class="btn btn-primary btn-pill w-100 mb-2">复制链接</button>',
+      );
+      var closeBtn = $('<button class="btn btn-light w-100">关闭</button>');
+
+      copyBtn.on("click", function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(url)
+            .then(function () {
+              alert("链接已复制！");
+            })
+            .catch(function () {
+              alert("复制失败，请手动复制");
+            });
+        } else {
+          alert("浏览器不支持自动复制，请手动复制");
+        }
+      });
+
+      closeBtn.on("click", function () {
+        modal.remove();
+      });
+
+      inner.append(copyBtn).append(closeBtn);
+      modal.append(inner);
+      $("body").append(modal);
+    }
+  });
+
   var logout = $(
     '<button class="btn btn-outline-danger btn-pill">退出登录</button>',
   );
