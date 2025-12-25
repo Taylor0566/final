@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusHub</title>
+  <link href="assets/vendor/bootstrap-5.3.2.min.css" rel="stylesheet" />
+  <link href="assets/styles.css" rel="stylesheet" />
+</head>
+
+<body class="bg-apple-gray" data-page="HOME">
+  <nav class="nav-dark sticky-top">
+    <div class="container d-flex align-items-center justify-content-between py-2">
+      <div class="d-flex align-items-center">
+        <span class="brand">CampusHub</span>
+      </div>
+      <div class="d-none d-md-flex align-items-center gap-3">
+        <span class="nav-item" data-view="HOME">首页</span>
+        <span class="nav-item" data-view="CALENDAR">日历</span>
+        <span class="nav-item" data-view="PUBLISH">发布</span>
+        <span class="nav-item" data-view="STATS">统计</span>
+        <span class="nav-item" data-view="FEEDBACK">反馈</span>
+        <span class="nav-item" data-view="PROFILE">个人中心</span>
+      </div>
+      <div class="d-none d-md-flex align-items-center gap-3">
+        <div class="position-relative" id="search-wrapper">
+          <input id="search-input" class="search-input" type="text" placeholder="搜索活动..." />
+          <div id="search-suggest" class="suggest-dropdown d-none"></div>
+        </div>
+        <div id="auth-area" class="d-flex align-items-center gap-2"></div>
+      </div>
+      <button class="btn btn-link text-light d-md-none" id="mobile-menu-btn">
+        ☰
+      </button>
+    </div>
+    <div id="mobile-menu" class="d-md-none mobile-menu d-none">
+      <div class="container py-3">
+        <div class="mb-3">
+          <input id="m-search-input" class="search-input w-100" type="text" placeholder="搜索活动..." />
+        </div>
+        <div class="d-flex flex-column gap-3">
+          <span class="nav-item" data-view="HOME">首页</span>
+          <span class="nav-item" data-view="CALENDAR">日历</span>
+          <span class="nav-item" data-view="HOME" data-anchor="activities">活动列表</span>
+          <span class="nav-item" data-view="PUBLISH">发布</span>
+          <span class="nav-item" data-view="STATS">统计</span>
+          <span class="nav-item" data-view="FEEDBACK">反馈</span>
+          <span class="nav-item" data-view="PROFILE">个人中心</span>
+        </div>
+        <div class="pt-3 border-top">
+          <div id="m-auth-area" class="d-flex flex-column gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section id="view-HOME" class="d-block">
+      <div class="hero">
+        <img class="hero-bg" src="assets/img/hero-bg.jpg" alt="" />
+        <div class="hero-overlay"></div>
+        <div class="container text-center hero-content">
+          <h1 class="hero-title">
+            校园生活，<br class="d-md-none" />从此不同。
+          </h1>
+          <p class="hero-sub">
+            探索数百个精彩活动，结识志同道合的伙伴。CampusHub
+            为你连接无限可能。
+          </p>
+          <button class="btn btn-light btn-lg rounded-pill fw-semibold" id="btn-explore">
+            开始探索
+          </button>
+        </div>
+      </div>
+      <div class="slider-wrap bg-apple-gray py-4">
+        <h2 class="text-center fw-bold mb-3">精选活动瞬间</h2>
+        <div class="slider-track" id="continuous-slider"></div>
+      </div>
+      <div class="container my-4" id="activities">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mb-3">
+          <h2 class="fw-bold">热门活动</h2>
+          <div class="d-flex gap-2 overflow-auto no-scrollbar" id="category-filter"></div>
+        </div>
+        <div class="row g-4" id="event-grid"></div>
+        <div class="text-center my-4 d-none" id="more-wrap">
+          <button class="btn btn-outline-secondary rounded-pill" id="btn-more">
+            查看更多
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-DETAIL" class="d-none">
+      <div id="detail-container"></div>
+    </section>
+
+    <section id="view-PUBLISH" class="d-none">
+      <div class="d-flex">
+        <div class="d-none d-lg-block visual-left">
+          <img src="assets/img/publish-bg.jpg" class="visual-img" alt="" />
+          <div class="visual-overlay"></div>
+          <div class="visual-top container py-3">
+            <button class="apple-back" id="publish-back">← 返回首页</button>
+          </div>
+          <div class="visual-content container">
+            <h2 class="text-light fw-bold display-6 mb-3">
+              让创意落地，<br />只需简单几步。
+            </h2>
+          </div>
+        </div>
+        <div class="flex-grow-1">
+          <div class="container py-4 py-md-5" id="publish-form-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-STATS" class="d-none">
+      <div class="container py-5">
+        <div class="mb-4">
+          <h1 class="fw-bold fs-2">数据看板</h1>
+          <p class="text-muted">全方位分析校园活动趋势与影响力。</p>
+        </div>
+        <div class="row g-4" id="metric-cards"></div>
+        <div class="row g-4 mt-2">
+          <div class="col-lg-6">
+            <div class="card shadow-sm rounded-4">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="fw-bold">活动类型分布 (ECharts)</h5>
+                </div>
+                <div id="echarts-pie" style="height: 320px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card shadow-sm rounded-4">
+              <div class="card-body">
+                <h5 class="fw-bold mb-2">月度参与趋势</h5>
+                <div id="echarts-line" style="height: 320px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card shadow-sm rounded-4">
+              <div class="card-body">
+                <h5 class="fw-bold mb-2">热门活动 Top 5</h5>
+                <div id="echarts-bar" style="height: 320px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card shadow-sm rounded-4">
+              <div class="card-body">
+                <h5 class="fw-bold mb-2">校园活力维度</h5>
+                <div id="echarts-radar" style="height: 320px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-LOGIN" class="d-none">
+      <div class="d-flex min-vh-100">
+        <div class="d-none d-lg-block half-visual">
+          <img src="assets/img/login-bg.jpg" class="visual-img" alt="" />
+          <div class="visual-gradient"></div>
+          <div class="visual-caption container">
+            <h2 class="display-5 text-light fw-bold mb-3">探索无限可能。</h2>
+            <p class="lead text-light-50">
+              CampusHub
+              是连接你与校园精彩活动的桥梁。立即登录，开启你的专属旅程。
+            </p>
+          </div>
+        </div>
+        <div class="flex-grow-1 d-flex align-items-center">
+          <div class="container" id="login-form-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-REGISTER" class="d-none">
+      <div class="d-flex min-vh-100">
+        <div class="d-none d-lg-block half-visual">
+          <img src="assets/img/register-bg.jpg" class="visual-img" alt="" />
+          <div class="visual-gradient"></div>
+          <div class="visual-caption container">
+            <h2 class="display-5 text-light fw-bold mb-3">加入社区。</h2>
+            <p class="lead text-light-50">
+              创建您的 CampusHub
+              账户，立即开始组织、参与和分享精彩的校园活动。
+            </p>
+          </div>
+        </div>
+        <div class="flex-grow-1 d-flex align-items-center">
+          <div class="container" id="register-form-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-PROFILE" class="d-none">
+      <div id="profile-wrap" class="min-vh-100"></div>
+    </section>
+
+    <section id="view-FEEDBACK" class="d-none">
+      <div class="container py-5">
+        <div class="text-center mb-4">
+          <h1 class="fw-semibold fs-2">意见反馈</h1>
+          <p class="text-muted">您的建议是我们进步的动力。</p>
+        </div>
+        <div class="card rounded-4 shadow-sm">
+          <div class="card-body" id="feedback-form-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-CALENDAR" class="d-none">
+      <div class="container py-5" id="calendar-wrap"></div>
+    </section>
+  </main>
+
+  <footer class="bg-white border-top py-4">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <div class="mb-3 mb-md-0">
+        <span class="fw-bold fs-5">CampusHub</span>
+      </div>
+      <div class="d-flex gap-3 small text-muted">
+        <span>关于我们</span>
+        <span>隐私政策</span>
+        <span class="cursor-pointer" id="footer-feedback">意见反馈</span>
+      </div>
+    </div>
+    <div class="container mt-3 text-center text-secondary small">
+      © 2025 CampusHub. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="assets/vendor/jquery-3.7.1.min.js"></script>
+  <script src="assets/vendor/bootstrap.bundle-5.3.2.min.js"></script>
+  <script src="assets/vendor/echarts-5.5.0.min.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+
+</html>
